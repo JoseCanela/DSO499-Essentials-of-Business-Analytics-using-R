@@ -1,0 +1,307 @@
+---
+title: "DSO 499: Essentials of Business Data Analysis Using R"
+author: "Intro to ggplot2"
+date: "Fall 2019"
+output:
+  
+  pdf_document: default
+  number_sections: true
+  theme: united
+  toc: yes
+  toc_depth: 3
+header-includes:
+   - \usepackage{color}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F,eval = F, width = 50, tidy.opts=list(width.cutoff=40), tidy=TRUE)
+```
+
+
+# Scatterplots 
+
+@. Load the `ggplot2` package into R. 
+
+```{r, warning=FALSE}
+#load ggplot2 so that we can use the function and data that comes with it
+# you'll have to comment the install.packages() function once you've installed it on your machine.
+
+# install.packages("ggplot2")
+library(ggplot2) 
+
+```
+
+@. Use the `mpg` dataset that comes with the `ggplot2` package, and create a scatterplot that shows the relationship between the engine displacement `displ` and the highway miles per gallon variable `hwy`.
+```{r}
+?mpg
+?ggplot
+
+ggplot(mpg, aes(x=displ, y=hwy)) + 
+  geom_point()
+
+
+```
+
+
+@. Use color to distiguish between different types (`class`) of cars in the preivous plot. 
+
+```{r}
+?mpg
+?ggplot
+
+ggplot(mpg, aes(x=displ, y=hwy, size = 2)) + 
+  geom_point(aes(col=class))
+
+
+
+```
+
+
+
+@. In the previous plot, we used assigned a categorical variable to the `color` aesthetics. In this exercises, try to add the `color` aesthetics to the `geom_point()` line of code. Explain what happened. 
+
+```{r}
+?mpg
+?ggplot
+
+ggplot(mpg, aes(x=displ, y=hwy, color = class)) + 
+  geom_point(color ="red")
+
+
+
+```
+
+@. Use the `size` aesthetic to show the different types of cars (`class`) instead of the color aesthetic. 
+
+```{r}
+?mpg
+?ggplot
+
+ggplot(mpg, aes(x=displ, y=hwy, size = class)) + 
+  geom_point()
+
+ggplot(mpg, aes(x=displ, y=hwy, size = cyl)) + 
+  geom_point(aes(col = class))
+
+```
+
+### Facets
+
+@. Use the function `facet_wrap()` to show the relationship between `displ` and `hwy` for each of the car types (`class`) in a seperate graph. 
+
+```{r}
+?mpg
+?ggplot
+
+ggplot(mpg, aes(x=displ, y=hwy)) + 
+  geom_point() +
+  facet_wrap(~class)
+
+ggplot(mpg, aes(x=displ, y=hwy)) + 
+  geom_point() +
+  facet_wrap(~class, nrow = 2)
+
+ggplot(mpg, aes(x=displ, y=hwy)) + 
+  geom_point() +
+  facet_wrap(cyl~class)
+
+```
+
+# Bar Graphs 
+
+@. Use the `str()` function to explore the `diamonds` dataset that comes with `ggplot2` package. 
+
+```{r}
+?diamonds
+str(diamonds)
+```
+
+@. Create a barchart that shows the count distribution for each of the `cut` levels of the diamonds. 
+
+```{r}
+?diamonds
+?geom_bar
+
+ggplot(diamonds, aes(x = cut)) +
+  geom_bar()
+
+ggplot(diamonds, aes(x = cut)) +
+  geom_bar(fill = "purple")
+
+ggplot(diamonds, aes(x = cut)) +
+  geom_bar(aes(col = "purple"))
+```
+
+@. Check what happens if you try to create a count bar chart for the variable `carat`. 
+
+```{r}
+?diamonds
+?geom_bar
+
+# Note that 'carat' BAR CHARTS don't look good
+ggplot(diamonds, aes(x = carat)) +
+  geom_bar()
+
+# Let's make BOXPLOTS instead
+
+ggplot(diamonds, aes(x = cut)) +
+  geom_boxplot(aes(x=cut, y= carat))
+
+ggplot(diamonds, aes(x = carat, y = price)) +
+  geom_boxplot(aes(group = cut_width(carat, 0.5)))
+
+
+# Now, let's make HISTOGRAMS instead
+ggplot(diamonds, aes(x = price)) +
+  geom_histogram(bins = 10) +
+  ylab("Number of Diamonds") +
+  xlab("U.S. Dollars") +
+  labs(title = "Price Distribution")
+
+```
+
+@. Load the `gcookbook` pacakge to R. 
+
+```{r}
+#install.packages("gcookbook")
+library(gcookbook)
+```
+
+@. Investigate the contents of the `BOD` dataset that comes with `gcookbook` R package. 
+
+```{r}
+?BOD
+str(BOD)
+```
+
+@. Create a bar chart that shows you the biochemical oxygen demand for each time in an evaluation of water quality.
+
+```{r}
+?BOD
+str(BOD)
+
+ggplot(BOD, aes(x = Time, y = demand)) +
+  geom_col() +
+
+```
+
+@. How can you improve the previous graph?
+
+```{r}
+?BOD
+str(BOD)
+
+ggplot(BOD, aes(x = as.factor(Time), y = demand)) +
+  geom_col()
+
+```
+
+@. Change the with of each bar in the previous graph into 0.5. 
+
+```{r}
+?BOD
+str(BOD)
+
+ggplot(BOD, aes(x = as.factor(Time), y = demand)) +
+  geom_col(width = 0.5)
+
+```
+@. Change the color of the bars in the previous graph into `lightblue`.
+
+```{r}
+?BOD
+str(BOD)
+
+ggplot(BOD, aes(x = as.factor(Time), y = demand)) +
+  geom_col(width = 0.5, fill = "lightblue", col = "red")
+
+```
+
+### Adding Labels to a Bar Graph
+
+To do so, we will add a new layer to our plot using `geom_text()`.
+
+
+@. For the BOD barchart created before, add the oxygen demand value on the bars for each of the Times. 
+```{r}
+?BOD
+str(BOD)
+
+ggplot(BOD, aes(x = as.factor(Time), y = demand)) +
+  geom_col(width = 0.5, fill = "lightblue", col = "red") +
+  geom_text(aes(label = demand, vjust = -0.5))
+
+```
+
+### Horizontal Bar Charts
+
+@. Create a horizontal barchart version of the BOD barchart using the `coord_flip()` function. 
+
+```{r}
+?BOD
+str(BOD)
+
+ggplot(BOD, aes(x = as.factor(Time), y = demand)) +
+  geom_col(width = 0.5, fill = "lightblue", col = "red") +
+  coord_flip()
+
+```
+
+### Grouping Bars Together
+
+@. Create a bargraph that shows how each `cut` level in the diamonds dataset is distribued among the different `clarity` levels for the diamonds.
+
+```{r}
+ggplot(diamonds, aes(x = cut, fill = clarity)) +
+geom_bar(position = "dodge", col = "black")
+```
+
+### Using Colors in a Bar Graph
+
+@. Exlpore the `uspopchange` dataset that comes with the `gcookbook` R package. 
+
+```{r}
+str(uspopchange)
+```
+
+
+@. Create a barchat that shows the % change in population for the top 10 states. The bars should be colored based on the region of each state (default colors).
+
+
+
+@. Use the `scale_fill_manual()` function to update the colors of the previous chart as follows: South (`pink`), and West (`lightblue`). 
+
+
+@. Reorder the bars in the previous barchart to decreasing order. 
+
+
+### Coloring Negative and Positive Bars Differently
+
+@. Explore the `climate` dataset from the `gcookbook` R package. 
+
+```{r}
+str(climate)
+```
+
+@. Create a dataframe for observations (Year 1900 and after) in the climate dataset that have Berkeley as their datasource. Save it in a variable called  `subclimate`.
+
+
+@. Create a new `boolean` variable `Pos` in the `sublclimate` dataset. This variable is `T` if `Anomaly10y` is positive otherwise, it will be `F`. 
+
+
+@. Use the `subclimate` dataset to create a barchart that shows the distribution of the `Anomaly10y` values over the years. Use coloring to distinguish between postive and negative anomalies. 
+
+
+@. Update the colors in the previous graph to `lightblue` for positive anomalies, and `red` for negative anomalies. 
+
+# Cleveland Dot Plot or Dot Plots
+
+@. Explore the `tophitters2001` dataset that comes in the `gcookbook` R package.
+
+
+@. Create a dotplot that shows the name as well as the average batting score for the top 10 players. 
+
+
+

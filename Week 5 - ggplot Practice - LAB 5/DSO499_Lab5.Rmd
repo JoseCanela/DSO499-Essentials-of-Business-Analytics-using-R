@@ -1,0 +1,206 @@
+---
+title: "DSO499_Lab5"
+author: "Jose Canela"
+date: "10/9/2019"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Multiple Linear Regression, ggplot2, and Real Estate
+
+We begin by uploading the NYC condo evaluations data for fiscal year 2011-2012 and looking at the variables that were evaluated.
+
+```{r}
+library(ggplot2)
+housing = read.csv("housing.csv", stringsAsFactors=F)
+names(housing)
+```
+
+Next, we rename the column names of the dataset to make analysis easier. 
+
+```{r}
+names(housing)=c("Neighborhood","Class","Units","YearBuilt","SqFt","Income","IncomePerSqFt","Expense","ExpensePerSqFt","NetIncome","Value","ValuePerSqFt","Boro")
+
+names(housing)
+```
+
+## Observing The Distribution Of ValuePerSqFt
+
+@. Create a histogram of ValuePerSqFt using ggplot. Use the labs layer to properly label x and y axes. Use the binwidth option to select an appropriate binwidth. Comment on your findings.
+
+```{r}
+ggplot(housing, aes(x = ValuePerSqFt)) +
+  geom_histogram(binwidth = 25, col = "black") +
+  ylab("Number of Condos") +
+  xlab("U.S. Dollars Per Square Feet") +
+  labs(title = "ValuePerSqFt Distribution")
+```
+
+The distribution of the condo value per square feet is somewhat right skewed. Hence, from the histogram we can see that the median number of U.S. dollars per square feet is approximately 112.50 U.S. dollars per square foot and the mean number of U.S. dollars per square feet that is probably approximately 130.50 U.S. dollars per square foot. In fact, we can verify whether these values are close to the actual median and means:
+```{r, echo = FALSE}
+print(paste0("Median Value per Square Foot: $", median(housing$ValuePerSqFt)))
+print(paste0("Mean Value per Square Foot: $", mean(housing$ValuePerSqFt)))
+```
+Thus, we can see that the observed values were very close!
+
+## Histograms That Take Location Into Account
+
+@. First, map color to Boro using fill option. Then create the multiple histograms faceting on Boro and keeping the color coding on the location. Comment on your findings.
+
+```{r,echo=FALSE}
+ggplot(housing, aes(x = ValuePerSqFt)) +
+  geom_histogram(binwidth = 25, aes(fill = as.factor(housing$Boro)), col = "black") +
+  ylab("Number of Condos") +
+  xlab("U.S. Dollars Per Square Feet") +
+  labs(title = "ValuePerSqFt Distribution Segmented by Borough")
+```
+
+When we segment the overall value per square feet distribution by borough, we can see that the vast majority of the condos with high value per square footage are located in Manhattan. In this case, most of them have a value per square foot above the median and mean. However, if you live outside of Manhattan, the value per square footage of our condo will most likely be below the median and mean. If one were to rank the boroughs by value per square footage most of their condos have, the ranking in descending order would be: Manhattan, Brooklyn, Queens, Staten Island, Bronx. 
+
+
+```{r,echo=FALSE}
+ggplot(housing, aes(x = ValuePerSqFt)) +
+  geom_histogram(binwidth = 25, aes(fill = as.factor(housing$Boro)), col = "black") +
+  facet_wrap(as.factor(housing$Boro)) +
+  ylab("Number of Condos") +
+  xlab("U.S. Dollars Per Square Feet") +
+  labs(title = "ValuePerSqFt Distribution of Each NYC Borough")
+```
+
+When we observe the value per square feet distribution of each individual borough, we notice that the distributions do not match the distribution of value per square foot when one combines all of the boroughs in one's distribution analysis. Overall, we can predict that Manhattan will hold most of the variability. In addition, we can see that the reason why the valuePerSqFt distribution was right-skewed was due to the most of the condos in Manhattan having a balue per square foot above the mean and median of value per square footage for the entire dataset. The distribtuions of all the non-Manhattan boroughs are basically right-skewed whereas the Manhattan value per square footage distribtuion is slightly left-skewed. In addition, when looking at the individual distributions for each of the non-Monhattan boroughs, we can see that almost all of the condos in each histogram are less than the mean and median of the value per square foot of the entire dataset.
+
+## Observing The Distributions Of Square Footage And The Number Of Units
+
+@. Next create histograms for square footage and the number of units. Comment on the distributions.
+
+```{r}
+ggplot(housing, aes(x = Units)) +
+geom_histogram(bins = 50, aes(fill = as.factor(housing$Boro)), col = "black") +
+ylab("Number of Condos") +
+xlab("Number of Units") +
+labs(title = "Distribution of Number of Units Segmented by Borough")
+```
+
+The distribution of the number of units is heavily right-skewed. The median number of units in New York City condos was `r median(housing$Units)`. The mean number of units in New York City condos was `r mean(housing$Units)`. When we color segment the distribution by borough, we see that condos with larger number of units are generally located in Manhattan. In addition, it looks like the condos with the lowest number of units are generally located in Manhattan as well. 
+
+```{r}
+ggplot(housing, aes(x = SqFt)) +
+geom_histogram(bins = 75, aes(fill = as.factor(housing$Boro)), col = "black") +
+ylab("Number of Condos") +
+xlab("Square Footage") +
+labs(title = "SqFt Distribution Segmented by Borough")
+```
+
+The distribution of condo square footage is heavily right-skewed. The median square footage of New York City condos was `r median(housing$Units)`. The mean square footage of New York City condos was `r mean(housing$Units)`. When we color segment the distribution by borough, we see that condos with larger square footage are generally located in Manhattan. Condos with lower square footage seem to generally be located in either Brooklyn or Manhattan. 
+
+## Observing The Respective Distributions Of The Number Of Units And Square Footage BY Value Per Square Foot
+
+@. Plot a scatterplots of the value per square foot versus log of number of units and log of square footage.
+
+```{r}
+ggplot(housing, aes(x = ValuePerSqFt, y = log(Units))) +
+geom_point() +
+xlab("U.S. Dollars Per Square Foot") +
+ylab("Log of Number of Units") +
+labs(title = "Distribution of the Number of Units by\n Value per Square Foot (Log Scaled)")
+```
+
+
+```{r}
+ggplot(housing, aes(x = ValuePerSqFt, y = log(SqFt))) +
+geom_point() +
+xlab("U.S. Dollars Per Square Foot") +
+ylab("Log of Square Footage") +
+labs(title = "Distribution of Square Footage (Log Scaled) by\n Value per Square Foot")
+```
+
+### Filtering Through The Dataset Due To The Large Number of Units For Some Building
+
+@. You should notice that there are quite a few buildings with an incredible number of units. How many buildings have at least 1000 units?
+
+```{r}
+nrow(subset(housing, Units>=1000))
+```
+There are `r nrow(subset(housing, Units>=1000))` condos that have at least 1000 units. Hence, we will remove these condos from our dataset and focus on predictive modeling.
+
+```{r}
+housing_lt1000 = subset(housing, Units < 1000)
+```
+
+## Multiple Linear Regression
+
+@. Build a multiple linear regression model to predict the property value per sq ft. We already saw that accounting for different boroughs will be an important and the various scatterplots indicated that Units and SqFt will be important as well. First, Fit the model using the formula interface in the *lm* function and use I(log(Units)) and I(log(SqFt)) sintax for the log transformed inputs. Next, use the *summary* command to analyze the model.
+
+```{r}
+?lm
+linear = lm(ValuePerSqFt ~ I(log(Units)) + I(log(SqFt)) + Boro, housing_lt1000)
+summary(linear)
+```
+
+The response variable (i.e. dependent variable) in this multiple linear regression model is value per square foot ((in U.S. dollars) of a condo and the predictors (i.e. independent variables) are the log of the number of units in a condo, the log of a condo's square footage, and the borough the condo is located in. After summarizing/analyzing the model, we can see that a condo being located in Staten island is statistically insignifcant when predcting a condo's value per quare foot. In general, the log of the number of units of a condo, the log of a condo's square footage, a condo being located in Manhattan, a condo being located in Brookyln, and a condo being located in Queens all had large statistical significant. A condo being located in Manhattan had the largest statistical signifcance when it came to predicting  a condo's value per square footage with a p-value of less than p-value: < 2.2e-16.
+
+R-squared represents the proportion of the variance for a dependent variable that is explained by the independent variable(s) in a regression model. Adjusted R-squared adjusts for the number of terms in a model. Hence, if you keep on adding statistically insignificant variables to a model, adjusted R-squared will decrease. Our adjusted R-squared was 0.5955. This is not bad given that we only used 6 independent variables. Our residual standard error was $43.58.  
+
+### Visualizing Model Information
+
+@. Use the *coefplot(your.model)* function to visualise the coefficients. Interpret your results.
+
+```{r,echo=FALSE}
+# install.packages("coefplot")
+library(coefplot)
+?coefplot
+coefplot(linear)
+```
+
+From the coefficient plot, we can state that according to the results of the model:
+
+* Keeping the other independent variables constant, every increase of one for the log of the number of units, the value per square foot of a condo decreases by $6.745 per square foot.
+
+* Keeping the other independent variables constant, every increase of one for the log of the square footage of a condo, the value per square foot of the condo increases by $13.605 per square foot.
+
+* Keeping the other independent variables constant, if a condo is located in Staten Island, the value per square foot of the condo decreases by $9.133 per square foot. However, it is important to note that this independent variable was not statistically significant when it came to predicting a condo's value per square foot. 
+
+* Keeping the other independent variables constant, if a condo is located in Brooklyn, the value per square foot of the condo increases by $34.652 per square foot. 
+
+* Keeping the other independent variables constant, if a condo is located in Queens, the value per square foot of the condo increases by $31.484 per square foot. 
+
+* Keeping the other independent variables constant, if a condo is located in Manhattan, the value per square foot of the condo increases by $128.471 per square foot.
+
+* The intercept exists due to bias in the model. In this case, the interpretability of the intercept is not clear at all. In general, it would be that if a condo doesn't exist at all (due to the fact that the log of square footage is equal to zero, and every other independent variable in the model is equal to zero), the value per square foot of a condo is -$71.749 per square foot. There is no meaningful way to interpet this. Instead, it seems that the intercept coefficent is just used to take care of the bias of the linear regression model. 
+
+
+## Predicting ValuePerSqFt Using A New Data Set
+
+To show that regression can be used to predict values, we will first upload new condo evaluations data that is available at http://www.jaredlander.com/data/housingNew.csv and create a new dataset called *housingNew*.  
+
+```{r}
+housingNew=read.table("http://www.jaredlander.com/data/housingNew.csv",sep=",",header=T,stringsAsFactors=F)
+```
+
+After uploading the new data, we then make a prediction with the new data with 95% confidence bounds:
+```{r}
+housePredict=predict(linear,newdata=housingNew, sefit=T,interval="prediction", level=0.95)
+```
+
+### Visualizing Observed Values v.s. Predicted Values
+
+@. Use ggplot function to visualize observed values vs. predicted. Color code by the
+location, add a y=x line using the *geom_abline* function. Comment on your findings.
+
+```{r}
+# head(housePredict)
+ggplot(housingNew, aes(x = housingNew$ValuePerSqFt, y = housePredict[,1])) +
+geom_point(aes(col = Boro)) +
+geom_abline() +
+xlab("Observed U.S. Dollars Per Square Foot") +
+ylab("Predicted U.S. Dollars Per Square Foot")+
+labs(title = "Observed ValuePerSqFt v.s. Predicted ValuePerSqFt\nColor Coded by Location (given New Housing Dataset)")
+```
+
+From the plot we can see that our model seems to predict the value per square footage for condos in the non-Manhattan boroughs pretty well. However, the model has trouble predicting the value per square footage for condos in Manhattan. There is a lot of variation still not being captured for the value per square footage of Manhattan condos. Thus, it looks like the there isn't a constant variance across boroughs when predicting the market value per square footage of condos. In other words, there seems to be some heterskedasticity present. Hence, an alternative option would be to create two models: one for predicting the value per square footage for condos in Manhattan and another model dedicated to the condos in the other four boroughs in NYC. 
